@@ -43,9 +43,10 @@ class Food(models.Model):
     description = models.CharField(max_length=255)
     food_category = models.ForeignKey(FoodCategory, on_delete=models.CASCADE)
     food_attribute = models.ForeignKey(FoodAttribute, on_delete=models.CASCADE)
+    price = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    flag = models.IntegerField()
+    flag = models.IntegerField(default=1)
 
     class Meta:
         managed = False
