@@ -1,7 +1,7 @@
 from django.db import models
 
 # Create your models here.
-class Person(models.Model):
+class FoodUser(models.Model):
     id = models.BigAutoField(primary_key=True)
     fname = models.CharField(max_length=50)
     lname = models.CharField(max_length=50)
@@ -13,8 +13,8 @@ class Person(models.Model):
     flag = models.IntegerField(default=1)
 
     class Meta:
-        managed = False
-        db_table = "person"
+        managed = True
+        db_table = "food_user"
 
 class FoodCategory(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -23,7 +23,7 @@ class FoodCategory(models.Model):
     flag = models.IntegerField(default=1)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "food_category"
 
 class FoodAttribute(models.Model):
@@ -33,7 +33,7 @@ class FoodAttribute(models.Model):
     flag = models.IntegerField(default=1)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "food_attribute"
 
 
@@ -49,6 +49,6 @@ class Food(models.Model):
     flag = models.IntegerField(default=1)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "food"
 

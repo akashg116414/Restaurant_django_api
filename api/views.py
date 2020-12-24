@@ -15,7 +15,7 @@ from django.db.models import Q
 
 # Models Imports.
 from api.models import (
-    Person,
+    FoodUser,
     Food,
     FoodAttribute,
     FoodCategory,
@@ -33,18 +33,16 @@ def check(email):
 
 
 class Signup(APIView):
-    # def get(self, request):
-        # userid = request.GET.get('userid')
-        # details = Persons.objects.filter(userid=userid).first()
-        # user = {'fname': details.fname, 'lname': details.lname}
-        # print(user)
-        # return Response(user, status.HTTP_200_OK)
-
     def post(self, request):
         fname = request.data.get('fname')
         lname = request.data.get('lname')
         email = request.data.get('email')
-        details = Person.objects.filter(email=email).first()
+        password = request.data.get('password')
+        dob = request.data.get('dob')
+        check1 = check(email)
+        print("hello")
+        details = FoodUser.objects.filter(email=email).first()
+        print(details)
         if details:
             return Response({"message": "User already exist"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -54,7 +52,7 @@ class Signup(APIView):
             return Response({"message": "Bad email"}, status=status.HTTP_400_BAD_REQUEST)
         password_hash = make_password(password)
         # print( fname,lname,email,password,dob)
-        Person.objects.create(fname=fname, lname=lname,
+        FoodUser.objects.create(fname=fname, lname=lname,
                               email=email, password=password_hash, dob=dob)
 
         # print(x.userid,x.fname)
@@ -90,7 +88,7 @@ class Signin(APIView):
     def post(self, request):
         email = request.POST.get('email')
         password = request.POST.get('password')
-        details = Person.objects.filter(email=email, flag=1).first()
+        details = FoodUser.objects.filter(email=email, flag=1).first()
         if details:
             if check_password(password, details.password):
                 payload = {'id': details.id}
@@ -171,6 +169,6 @@ class FoodItemCreate(APIView):
                     Food.objects.filter(Q(id__icontains=search) | Q(name__icontains=search))
                     .values("id", "name", "description", "food_category_id", "food_category__name", "food_attribute_id", "food_attribute__name")
                 )
-            return Response({"result": {"food_details": food_details}}, HTTP_200_OK)
+            return Response({"result": {"food_details": food_details}}, status.HTTP_200_OK)
         except:
-            return Response({"error": traceback.format_exc()}, HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"error": traceback.format_exc()}, status.HTTP_500_INTERNAL_SERVER_ERROR)
