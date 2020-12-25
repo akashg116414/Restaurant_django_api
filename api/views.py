@@ -181,3 +181,22 @@ class FoodItemCreate(APIView):
             return Response({"result": {"food_details": food_details}}, status.HTTP_200_OK)
         except:
             return Response({"error": traceback.format_exc()}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class FoodCategoryList(APIView):
+    @staticmethod
+    def get(request):
+        try:
+            search = request.GET.get("search")
+            food_details = (
+                    FoodCategory.objects.filter()
+                    .values("id", "name", "description")
+                )
+            if search:
+                food_details = (
+                    FoodCategory.objects.filter(Q(id__icontains=search) | Q(name__icontains=search))
+                    .values("id", "name", "description")
+                )
+            return Response({"result": {"food_category_details": food_details}}, status.HTTP_200_OK)
+        except:
+            return Response({"error": traceback.format_exc()}, status.HTTP_500_INTERNAL_SERVER_ERROR)
