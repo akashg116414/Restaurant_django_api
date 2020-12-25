@@ -11,6 +11,7 @@ import jwt
 import traceback
 import json
 from django.db.models import Q
+from ast import literal_eval as le
 # Create your views here.
 
 # Models Imports.
@@ -107,34 +108,37 @@ class FoodItemCreate(APIView):
             name = request.POST.get("name")
             if not name:
                 return Response({"message": "food name missing."}, status.HTTP_400_BAD_REQUEST)
-            description = request.POST.get("description")
-            if not description:
-                return Response({"message": "food description missing."}, status.HTTP_400_BAD_REQUEST)
-            price = request.POST.get("price")
-            if not price:
-                return Response({"message": "food price missing."}, status.HTTP_400_BAD_REQUEST)
-            category = request.POST.get("category")
-            if not category:
-                return Response({"message": "category missing."}, status.HTTP_400_BAD_REQUEST)
-            category_obj = FoodCategory.objects.filter(name = category).first()
-            if not category_obj:
-                category_description = request.POST.get("category_description")
-                if not category_description:
-                    return Response({"message": "food description missing."}, status.HTTP_400_BAD_REQUEST)
-                category_obj = FoodCategory.objects.create(name=category, description=category_description)
-            attribute = request.POST.get("attribute")
-            if not attribute:
-                return Response({"message": "attribute Missing."}, status.HTTP_400_BAD_REQUEST)
-            attribute_obj = FoodAttribute.objects.filter(name = attribute).first()
-            if not attribute_obj:
-                attribute_description = request.POST.get("attribute_description")
+            food_obj =Food.objects.filter(name = name).first()
+            if not food_obj:
+                description = request.POST.get("description")
                 if not description:
                     return Response({"message": "food description missing."}, status.HTTP_400_BAD_REQUEST)
-                attribute_obj = FoodAttribute.objects.create(name=attribute, description=attribute_description)
+                price = request.POST.get("price")
+                if not price:
+                    return Response({"message": "food price missing."}, status.HTTP_400_BAD_REQUEST)
+                category = request.POST.get("category")
+                if not category:
+                    return Response({"message": "category missing."}, status.HTTP_400_BAD_REQUEST)
+                category_obj = FoodCategory.objects.filter(name = category).first()
+                if not category_obj:
+                    category_description = request.POST.get("category_description")
+                    if not category_description:
+                        return Response({"message": "category_description missing."}, status.HTTP_400_BAD_REQUEST)
+                    category_obj = FoodCategory.objects.create(name=category, description=category_description)
+                print(category_obj)
+                attribute = request.POST.get("attribute")
+                if not attribute:
+                    return Response({"message": "attribute Missing."}, status.HTTP_400_BAD_REQUEST)
+                attribute_obj = FoodAttribute.objects.filter(name = attribute).first()
+                if not attribute_obj:
+                    attribute_description = request.POST.get("attribute_description")
+                    if not description:
+                        return Response({"message": "attribute_description missing."}, status.HTTP_400_BAD_REQUEST)
+                    attribute_obj = FoodAttribute.objects.create(name=attribute, description=attribute_description)
+                print(attribute_obj)
 
-            food_obj = FoodAttribute.objects.create(name=name, description=description, food_category= category_obj.id, food_attribute=attribute_obj.id, price = price)
-
-            return Response({"result": {"food_item": food_obj}}, status.HTTP_200_OK)
+                food_obj = Food.objects.create(name=name, description=description, food_category_id= category_obj.id, food_attribute_id=attribute_obj.id, price = price)
+            return Response({"result": {"food_item_id": food_obj.id}}, status.HTTP_200_OK)
         except:
             return Response({"error": traceback.format_exc()}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -143,31 +147,36 @@ class FoodItemCreate(APIView):
         try:
             food_category_id = request.GET.get("food_category_id")
             food_attribute_id = request.GET.get("food_attribute_id")
-            price_range = json.loads(request.GET.get("price_range","[]"))
+            price_range = le(request.GET.get("price_range","()"))
             search = request.GET.get("search")
             food_details = (
                     Food.objects.filter()
-                    .values("id", "name", "description", "food_category_id", "food_category__name", "food_attribute_id", "food_attribute__name")
+                    .values("id", "name", "description", "food_category_id", "price", "food_category__name", "food_attribute_id", "food_attribute__name")
                 )
             if food_category_id:
                 food_details = (
                     Food.objects.filter(food_category_id=food_category_id)
-                    .values("id", "name", "description", "food_category_id", "food_category__name", "food_attribute_id", "food_attribute__name")
+                    .values("id", "name", "description", "food_category_id", "price", "food_category__name", "food_attribute_id", "food_attribute__name")
                 )
             if food_attribute_id:
                 food_details = (
                     Food.objects.filter(food_attribute_id=food_attribute_id)
-                    .values("id", "name", "description", "food_category_id", "food_category__name", "food_attribute_id", "food_attribute__name")
+                    .values("id", "name", "description", "food_category_id", "price", "food_category__name", "food_attribute_id", "food_attribute__name")
                 )
             if food_attribute_id and food_category_id:
                 food_details = (
                     Food.objects.filter(food_attribute_id=food_attribute_id, food_category_id=food_category_id)
-                    .values("id", "name", "description", "food_category_id", "food_category__name", "food_attribute_id", "food_attribute__name")
+                    .values("id", "name", "description", "food_category_id", "price", "food_category__name", "food_attribute_id", "food_attribute__name")
+                )
+            if price_range:
+                food_details = (
+                    Food.objects.filter(price__range=price_range)
+                    .values("id", "name", "description", "food_category_id", "price", "food_category__name", "food_attribute_id", "food_attribute__name")
                 )
             if search:
                 food_details = (
                     Food.objects.filter(Q(id__icontains=search) | Q(name__icontains=search))
-                    .values("id", "name", "description", "food_category_id", "food_category__name", "food_attribute_id", "food_attribute__name")
+                    .values("id", "name", "description", "food_category_id", "price", "food_category__name", "food_attribute_id", "food_attribute__name")
                 )
             return Response({"result": {"food_details": food_details}}, status.HTTP_200_OK)
         except:
